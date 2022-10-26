@@ -1,0 +1,157 @@
+#John David Conley
+#Machine Learning
+#Assignment 3
+#10-25-2022
+#https://github.com/DavidConley/machinelearning03
+
+#1. (Titanic Dataset)
+##1. Find the correlation between ‘survived’ (target column) and ‘sex’ column for the Titanic use case in class.
+###a. Do you think we should keep this feature?
+##2. Do at least two visualizations to describe or show correlations.
+##3. Implement Naïve Bayes method using scikit-learn library and report the accuracy.
+
+#2. (Glass Dataset)
+##1. Implement Naïve Bayes method using scikit-learn library.
+###a. Use the glass dataset available in Link also provided in your assignment.
+###b. Use train_test_split to create training and testing part.
+##2. Evaluate the model on testing part using score and
+##[classification_report(y_true, y_pred)]
+##1. Implement linear SVM method using scikit library
+###a. Use the glass dataset available in Link also provided in your assignment.
+###b. Use train_test_split to create training and testing part.
+##2. Evaluate the model on testing part using score and
+##[classification_report(y_true, y_pred)]
+#Do at least two visualizations to describe or show correlations in the Glass Dataset.
+#Which algorithm you got better accuracy? Can you justify why?
+import numpy as np
+import pandas as pd
+import warnings
+warnings.filterwarnings("ignore")
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression, RidgeClassifierCV
+from sklearn.svm import SVC, LinearSVC
+from sklearn.ensemble import (RandomForestClassifier, GradientBoostingClassifier)
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import Perceptron
+from sklearn.linear_model import SGDClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import cross_val_score, GridSearchCV
+from sklearn.metrics import accuracy_score
+
+#1: Titanic
+titantrain = pd.read_csv('train.csv')
+titantest = pd.read_csv('test.csv')
+titantrain
+
+titantest
+
+combine = [titantrain, titantest]
+combine
+
+##1
+print(titantrain[["Sex", "Survived"]].groupby(['Sex'], as_index=False).mean().sort_values(by='Survived', ascending=False))
+
+###a
+print("Yes, both are as valid a statistic as the others.")
+
+##2
+survived = 'survived'
+not_survived = 'not survived'
+fig, axes = plt.subplots(nrows=1, ncols=2,figsize=(10, 4))
+women = titantrain[titantrain['Sex']=='female']
+men = titantrain[titantrain['Sex']=='male']
+ax = sns.distplot(women[women['Survived']==1].Fare.dropna(), bins=18, label = survived, ax = axes[0], kde =False)
+ax = sns.distplot(women[women['Survived']==0].Fare.dropna(), bins=40, label = not_survived, ax = axes[0], kde =False)
+ax.legend()
+ax.set_title('Female')
+ax = sns.distplot(men[men['Survived']==1].Fare.dropna(), bins=18, label = survived, ax = axes[1], kde = False)
+ax = sns.distplot(men[men['Survived']==0].Fare.dropna(), bins=40, label = not_survived, ax = axes[1], kde = False)
+ax.legend()
+_ = ax.set_title('Male')
+
+survived = 'survived'
+not_survived = 'not survived'
+fig, axes = plt.subplots(nrows=1, ncols=2,figsize=(10, 4))
+women = titantrain[titantrain['Sex']=='female']
+men = titantrain[titantrain['Sex']=='male']
+ax = sns.distplot(women[women['Survived']==1].Pclass.dropna(), bins=18, label = survived, ax = axes[0], kde =False)
+ax = sns.distplot(women[women['Survived']==0].Pclass.dropna(), bins=40, label = not_survived, ax = axes[0], kde =False)
+ax.legend()
+ax.set_title('Female')
+ax = sns.distplot(men[men['Survived']==1].Pclass.dropna(), bins=18, label = survived, ax = axes[1], kde = False)
+ax = sns.distplot(men[men['Survived']==0].Pclass.dropna(), bins=40, label = not_survived, ax = axes[1], kde = False)
+ax.legend()
+_ = ax.set_title('Male')
+
+##3
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+titantrain2 = pd.read_csv('train_preprocessed.csv')
+titantest2 = pd.read_csv('test_preprocessed.csv')
+
+X_train = titantrain2.drop(["Survived"], axis=1)
+Y_train = titantrain2["Survived"]
+X_test = titantest2.drop(["Sex"], axis=1)
+Y_test = titantest2["Sex"]
+
+classifier = GaussianNB()
+classifier.fit(X_train, Y_train)
+
+Y_pred = classifier.predict(X_test)
+
+print(classification_report(Y_test, Y_pred))
+print(confusion_matrix(Y_test, Y_pred))
+print('accuracy is',accuracy_score(Y_pred,Y_test))
+
+#2: Glass
+glass = pd.read_csv('glass.csv')
+iris = pd.read_csv('Iris.csv')
+
+glass
+
+iris
+
+from sklearn.model_selection import train_test_split
+glasX = glass.iloc[:, :-1].values
+glasY = glass.iloc[:, -1].values
+glasX_train, glasX_test, glasY_train, glasY_test = train_test_split(glasX, glasY, test_size = 0.2, random_state = 0)
+
+##Naïve Bayes
+##1
+glasclassifier = GaussianNB()
+glasclassifier.fit(glasX_train, glasY_train)
+
+glasY_pred = glasclassifier.predict(glasX_test)
+
+##2
+print(classification_report(glasY_test, glasY_pred))
+print(confusion_matrix(glasY_test, glasY_pred))
+print('accuracy is',accuracy_score(glasY_pred,glasY_test))
+
+##Linear SVM
+##1
+glasclassifier = SVC()
+glasclassifier.fit(glasX_train, glasY_train)
+
+glasY_pred = glasclassifier.predict(glasX_test)
+
+##2
+print(classification_report(glasY_test, glasY_pred))
+print(confusion_matrix(glasY_test, glasY_pred))
+print('accuracy is',accuracy_score(glasY_pred,glasY_test))
+
+#Visualizations
+Fe = glass.Fe
+Type = glass.Type
+plt.plot(Fe, Type, 'o', color='black')
+
+K = glass.K
+RI = glass.RI
+plt.plot(K, RI, 'o', color='black')
+
+#Final
+print("Bayes. It has the best prediction results and actual precision being calculated on a majority of items.")
